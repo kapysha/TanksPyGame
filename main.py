@@ -1,4 +1,6 @@
 import random
+from collections import deque
+
 import pygame
 from random import choice
 
@@ -12,9 +14,10 @@ clock = pygame.time.Clock()
 
 all_sprites = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
-tanks_group = pygame.sprite.Group()
+players_group = pygame.sprite.Group()
 walls_group_horizontal = pygame.sprite.Group()
 walls_group_vertical = pygame.sprite.Group()
+ai_group = pygame.sprite.Group()
 
 
 class Wall(pygame.sprite.Sprite):
@@ -120,14 +123,19 @@ def generate_maze():
 generate_maze()  # Генерация лабиринта перед началом игры
 
 
-class Tank(pygame.sprite.Sprite):
-    image = pygame.image.load('tanks/tank_1.png').convert_alpha()
+def load_image(path: str):
+    image = pygame.image.load(path).convert_alpha()
     image = pygame.transform.scale(image, (38, 53))
     original_image = image
     mask = pygame.mask.from_surface(image)
+    return image, original_image, mask
 
-    def __init__(self):
-        super().__init__(all_sprites, tanks_group)  # Modified
+
+class Tank(pygame.sprite.Sprite):
+    image, original_image, mask = load_image('tanks/tank_1.png')
+
+    def __init__(self, *groups):
+        super().__init__(*groups)  # Modified
         self.original_image = Tank.original_image
         self.image = self.original_image
         self.angle = 0
@@ -294,9 +302,137 @@ class Bullets(pygame.sprite.Sprite):
             self.velocity.y *= -1
 
 
-tank = Tank()
+def build_graph(grid_cells, cols, rows):
+    graph = {}
+    for cell in grid_cells:
+        x, y = cell.x, cell.y
+        neighbors = []
+        if not cell.walls['top'] and y > 0:
+            neighbors.append((x, y - 1))
+        if not cell.walls['bottom'] and y < rows - 1:
+            neighbors.append((x, y + 1))
+        if not cell.walls['left'] and x > 0:
+            neighbors.append((x - 1, y))
+        if not cell.walls['right'] and x < cols - 1:
+            neighbors.append((x + 1, y))
+        graph[(x, y)] = neighbors
+    return graph
+
+
+def find_path(graph, start, end):
+    queue = deque([start])
+    distances = {start: 0}  # расстояние
+    predecessors = {start: None}  # хранит предшественника каждой вершины
+
+    while queue:
+        current = queue.popleft()
+        if current == end:
+            break
+        for neighbor in graph.get(current, []):
+            if neighbor not in distances:
+                distances[neighbor] = distances[current] + 1
+                predecessors[neighbor] = current
+                queue.append(neighbor)
+
+    if end not in predecessors:
+        return None  # Путь не найден
+
+    # Восстановление пути
+    path = []
+    current = end
+    while current != start:
+        path.append(current)
+        current = predecessors[current]
+    path.append(start)
+    path.reverse()
+    return path
+
+
+class AITank(Tank):
+    image, original_image, mask = load_image('tanks/tank_2.png')
+
+    def __init__(self, graph, target):
+        super().__init__(all_sprites, ai_group)
+
+        self.original_image = AITank.original_image
+        self.image = self.original_image
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect(center=self.pos)
+
+        self.graph = graph
+        self.target = target
+        self.path = []
+        self.path_index = 0
+        self.path_update_interval = 0.5  # Интервал обновления пути в секундах
+        self.time_since_last_path = 0.0  # Типо секундомер
+
+    def find_grid_position(self, pos):
+        x, y = int(pos.x // TILE), int(pos.y // TILE)
+        return x, y
+
+    def update_path(self):
+        start = self.find_grid_position(self.pos)
+        end = self.find_grid_position(self.target.pos)
+
+        path = find_path(self.graph, start, end)
+        if path:
+            self.path = path[1:]
+            self.path_index = 0
+        else:
+            self.path = []
+            self.path_index = 0
+
+    def follow_path(self, delta_time):
+        if self.path and self.path_index < len(self.path):
+            target_cell = self.path[self.path_index]
+            target_pos = pygame.math.Vector2(
+                target_cell[0] * TILE + TILE // 2,
+                target_cell[1] * TILE + TILE // 2
+            )
+
+            direction_vector = target_pos - self.pos
+            distance = direction_vector.length()
+
+            if distance < 5:
+                self.path_index += 1
+                return
+
+            desired_angle = direction_vector.angle_to(
+                pygame.math.Vector2(0, -1))  # под каким углом направлен direction_vector относительно "вверх"
+            angle_diff = (desired_angle - self.angle + 180) % 360 - 180  # Чтобы в диапазоне от 180 до -180
+
+            if angle_diff > 5:
+                self.rotate('left', delta_time)
+            elif angle_diff < -5:
+                self.rotate('right', delta_time)
+            else:
+                self.angle = desired_angle
+                self.image = pygame.transform.rotate(self.original_image, self.angle)
+                self.rect = self.image.get_rect(center=self.rect.center)
+                self.mask = pygame.mask.from_surface(self.image)
+
+                self.move(forward=True, delta_time=delta_time)
+
+    def update(self, delta_time, keys_pressed):
+        self.time_since_last_path += delta_time
+        if self.time_since_last_path >= self.path_update_interval:
+            self.update_path()
+            self.time_since_last_path = 0.0
+
+        self.follow_path(delta_time)
+
+    def distance_to_player(self):
+        return (self.pos - self.target.pos).length()
+
+
+graph = build_graph(grid_cells, cols, rows)
+
 for cell in grid_cells:
     cell.draw()
+
+tank = Tank(all_sprites, players_group)
+
+ai_tank = AITank(graph, tank)
 
 running = True
 while running:

@@ -1,6 +1,5 @@
 import random
 from collections import deque
-
 import pygame
 from random import choice
 
@@ -198,6 +197,7 @@ class Tank(pygame.sprite.Sprite):
         return TILE // 2, TILE // 2
 
     def move(self, forward, delta_time):
+        self.is_moving = True
         direction = 1 if not forward else -1
         self.is_moving_forward = forward
 
@@ -218,15 +218,13 @@ class Tank(pygame.sprite.Sprite):
     def rotate(self, direction, delta_time):
         rotation_step = self.rotation_speed * delta_time
 
-        if not self.is_moving_forward:
+        if not self.is_moving_forward and self.is_moving:
             rotation_step = -rotation_step
 
         if direction == 'left':
             new_angle = (self.angle + rotation_step) % 360
         elif direction == 'right':
             new_angle = (self.angle - rotation_step) % 360
-        else:
-            return  # Неправильное направление
 
         temp_image = pygame.transform.rotate(self.original_image, new_angle)
         temp_sprite = pygame.sprite.Sprite()
@@ -255,13 +253,15 @@ class Tank(pygame.sprite.Sprite):
 
             self.mask = pygame.mask.from_surface(self.image)
 
-    def fire_bullet(self):
+    def fire_bullet(self, owner='player'):
         offset = pygame.math.Vector2(0, -self.rect.height // 3).rotate(-self.angle)
         bullet_pos = self.pos + offset
 
-        Bullets(bullet_pos, self.angle)
+        Bullets(bullet_pos, self.angle, owner=owner)
 
     def update(self, delta_time, keys_pressed):
+        self.is_moving = False
+
         if keys_pressed[pygame.K_UP] and not keys_pressed[pygame.K_DOWN]:
             self.move(forward=True, delta_time=delta_time)
         elif keys_pressed[pygame.K_DOWN] and not keys_pressed[pygame.K_UP]:
@@ -274,11 +274,12 @@ class Tank(pygame.sprite.Sprite):
 
 
 class Bullets(pygame.sprite.Sprite):
-    def __init__(self, pos, angle):
+    def __init__(self, pos, angle, owner=None):
         super().__init__(all_sprites, bullets_group)
         self.radius = 4
         self.color = pygame.Color(54, 53, 51)
         self.speed = 300
+        self.owner = owner
 
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
@@ -364,7 +365,12 @@ class AITank(Tank):
         self.path = []
         self.path_index = 0
         self.path_update_interval = 0.5  # Интервал обновления пути в секундах
-        self.time_since_last_path = 0.0  # Типо секундомер
+        self.time_since_last_path = 0.0  # Таймер для обновления пути
+
+        self.shooting_range = 250  # Пиксели
+        self.shooting_angle_threshold = 20  # Градусы
+        self.shoot_cooldown = 1.0
+        self.time_since_last_shot = 0.0  # Таймер
 
     def find_grid_position(self, pos):
         x, y = int(pos.x // TILE), int(pos.y // TILE)
@@ -413,6 +419,34 @@ class AITank(Tank):
 
                 self.move(forward=True, delta_time=delta_time)
 
+    def is_player_in_range(self):
+        distance = self.distance_to_player()
+        return distance <= self.shooting_range
+
+    def is_barrel_aimed_at_player(self):
+        direction_to_player = self.target.pos - self.pos
+        desired_angle = direction_to_player.angle_to(pygame.math.Vector2(0, -1))
+        angle_diff = (desired_angle - self.angle + 180) % 360 - 180
+        return abs(angle_diff) <= self.shooting_angle_threshold
+
+    def has_line_of_sight(self):
+        start = self.pos
+        end = self.target.pos
+
+        direction = end - start
+        distance = direction.length()
+
+        direction = direction.normalize()
+
+        for i in range(round(distance)):
+            point = start + direction * i
+            point_sprite = pygame.sprite.Sprite()
+            point_sprite.rect = pygame.Rect(point.x, point.y, 2, 2)
+            if pygame.sprite.spritecollideany(point_sprite, walls_group_horizontal) or \
+                    pygame.sprite.spritecollideany(point_sprite, walls_group_vertical):
+                return False  # Стена блокирует
+        return True  # Нет стен
+
     def update(self, delta_time, keys_pressed):
         self.time_since_last_path += delta_time
         if self.time_since_last_path >= self.path_update_interval:
@@ -420,6 +454,17 @@ class AITank(Tank):
             self.time_since_last_path = 0.0
 
         self.follow_path(delta_time)
+
+        self.time_since_last_shot += delta_time
+
+        # Проверка условий для стрельбы
+        # Игрок в радиусе
+        # Ствол направлен на игрока и нет стен между AI и игроком
+        if (self.is_player_in_range() and
+            (self.is_barrel_aimed_at_player() and self.has_line_of_sight())) and \
+                self.time_since_last_shot >= self.shoot_cooldown:
+            self.fire_bullet(owner='ai')
+            self.time_since_last_shot = 0.0
 
     def distance_to_player(self):
         return (self.pos - self.target.pos).length()
@@ -442,9 +487,19 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                tank.fire_bullet()
+                tank.fire_bullet(owner='player')
 
     all_sprites.update(current_delta_time, pygame.key.get_pressed())
+
+    for bullet in bullets_group:
+        if bullet.owner == 'ai':
+            if pygame.sprite.spritecollide(bullet, players_group, False):
+                print("В Игрока попали!")
+                bullet.kill()
+        elif bullet.owner == 'player':
+            if pygame.sprite.spritecollide(bullet, ai_group, False):
+                print("AI танк попали!")
+                bullet.kill()
 
     screen.fill(pygame.Color('lightgrey'))
     all_sprites.draw(screen)

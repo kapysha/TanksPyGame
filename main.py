@@ -162,7 +162,16 @@ class Tank(pygame.sprite.Sprite):
         for sprite in all_sprites:
             if isinstance(sprite, Wall):
                 if pygame.sprite.collide_mask(temp_sprite, sprite):
-                    return True  # Есть столкновение
+                    return True
+
+        all_tanks = pygame.sprite.Group(players_group, ai_group)
+
+        for tank in all_tanks:
+            if tank == self:
+                continue  # Пропустить самого себя
+            if pygame.sprite.collide_mask(temp_sprite, tank):
+                return True
+
         return False  # Нет столкновения
 
     def random_position(self):
@@ -367,7 +376,7 @@ class AITank(Tank):
         self.path_update_interval = 0.5  # Интервал обновления пути в секундах
         self.time_since_last_path = 0.0  # Таймер для обновления пути
 
-        self.shooting_range = 250  # Пиксели
+        self.shooting_range = 350  # Пиксели
         self.shooting_angle_threshold = 20  # Градусы
         self.shoot_cooldown = 1.0
         self.time_since_last_shot = 0.0  # Таймер

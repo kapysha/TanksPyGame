@@ -3,13 +3,14 @@ from collections import deque
 import pygame
 from random import choice
 
-RES = WIDTH, HEIGHT = 630, 630
+RES = WIDTH, HEIGHT = 720, 720
 TILE = 90
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
 screen = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
 all_sprites = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
@@ -17,6 +18,8 @@ players_group = pygame.sprite.Group()
 walls_group_horizontal = pygame.sprite.Group()
 walls_group_vertical = pygame.sprite.Group()
 ai_group = pygame.sprite.Group()
+
+bullet_sound = pygame.mixer.Sound('sounds/bullet.ogg')
 
 
 class Wall(pygame.sprite.Sprite):
@@ -122,16 +125,19 @@ def generate_maze():
 generate_maze()  # Генерация лабиринта перед началом игры
 
 
-def load_image(path: str):
+def load_image(path: str, rgb: tuple):
     image = pygame.image.load(path).convert_alpha()
-    image = pygame.transform.scale(image, (38, 53))
-    original_image = image
+    image = pygame.transform.scale(image, (28, 46))
+    green_overlay = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+    green_overlay.fill(rgb)  # (R, G, B, A) – A=100 для прозрачности
+    image.blit(green_overlay, (0, 0), special_flags=3)
+    original_image = image.copy()
     mask = pygame.mask.from_surface(image)
     return image, original_image, mask
 
 
 class Tank(pygame.sprite.Sprite):
-    image, original_image, mask = load_image('tanks/tank_1.png')
+    image, original_image, mask = load_image('tanks/tank.png', (70, 255, 0, 0))
 
     def __init__(self, *groups):
         super().__init__(*groups)  # Modified
@@ -145,9 +151,9 @@ class Tank(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         # Скорость танка
-        self.movement_speed = 150
+        self.movement_speed = 160
         # Скорость поворота
-        self.rotation_speed = 210
+        self.rotation_speed = 220
 
     def check_collision(self, movement_vector) -> bool:
         """Проверяет, есть ли столкновение с другими спрайтами с использованием масок"""
@@ -267,6 +273,7 @@ class Tank(pygame.sprite.Sprite):
         bullet_pos = self.pos + offset
 
         Bullets(bullet_pos, self.angle, owner=owner)
+        bullet_sound.play()
 
     def update(self, delta_time, keys_pressed):
         self.is_moving = False
@@ -359,7 +366,7 @@ def find_path(graph, start, end):
 
 
 class AITank(Tank):
-    image, original_image, mask = load_image('tanks/tank_2.png')
+    image, original_image, mask = load_image('tanks/tank.png', (152, 51, 51, 0))
 
     def __init__(self, graph, target):
         super().__init__(all_sprites, ai_group)

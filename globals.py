@@ -1,7 +1,7 @@
 import pygame
 
-RES = WIDTH, HEIGHT = 720, 720
-TILE = 90
+RES = WIDTH, HEIGHT = 630, 630
+TILE = 89
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
@@ -17,12 +17,12 @@ walls_group_vertical = pygame.sprite.Group()
 ai_group = pygame.sprite.Group()
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 bullet_sound = pygame.mixer.Sound('sounds/bullet.ogg')
+kill_sound = pygame.mixer.Sound('sounds/kill.ogg')
 
 
 def load_image(path: str, rgb: tuple):
     image = pygame.image.load(path).convert_alpha()
     image.set_colorkey((255, 255, 255))
-    image = pygame.transform.scale(image, (31, 52))
     green_overlay = pygame.Surface(image.get_size(), pygame.SRCALPHA)
     green_overlay.fill(rgb)  # (R, G, B, A) – A=100 для прозрачности
     image.blit(green_overlay, (0, 0), special_flags=3)

@@ -9,7 +9,7 @@ class Tank(pygame.sprite.Sprite):
     image, original_image, mask = load_image('tanks/tank_1.png', (70, 255, 0, 0))
 
     def __init__(self, *groups):
-        super().__init__(*groups)  # Modified
+        super().__init__(*groups)
         self.fire_frames = [load_image('tanks/tank_1.png', (70, 255, 0, 0))[0],
                             load_image('tanks/tank_2.png', (70, 255, 0, 0))[0],
                             load_image('tanks/tank_3.png', (70, 255, 0, 0))[0]]
@@ -33,7 +33,6 @@ class Tank(pygame.sprite.Sprite):
         self.rotation_speed = 220
 
     def check_collision(self, movement_vector) -> bool:
-        """Проверяет, есть ли столкновение с другими спрайтами с использованием масок"""
         new_pos = self.pos + movement_vector
         temp_rect = self.image.get_rect(center=new_pos)
         temp_sprite = pygame.sprite.Sprite()
@@ -77,14 +76,15 @@ class Tank(pygame.sprite.Sprite):
 
                 collision = False
                 for sprite in all_sprites:
-                    if isinstance(sprite, Wall):
+                    if isinstance(sprite, Wall) or isinstance(sprite, Tank):
                         if pygame.sprite.collide_mask(temp_sprite, sprite):
                             collision = True
-                            break
+                            break  # Если столкновение, прекращаем проверку
 
                 if not collision:
                     return pos_x, pos_y
 
+            # Если не удалось найти подходящую позицию
             return TILE // 2, TILE // 2
         return TILE // 2, TILE // 2
 
@@ -111,7 +111,7 @@ class Tank(pygame.sprite.Sprite):
         rotation_step = self.rotation_speed * delta_time
 
         if not self.is_moving_forward and self.is_moving:
-            rotation_step = -rotation_step
+            rotation_step = rotation_step  # Можно поставить "-" и будет инверсия при движении назад
 
         if direction == 'left':
             new_angle = (self.angle + rotation_step) % 360
@@ -158,17 +158,18 @@ class Tank(pygame.sprite.Sprite):
             bullet_sound.play()
 
     def update(self, delta_time, keys_pressed):
-        self.is_moving = False
+        if keys_pressed:
+            self.is_moving = False
 
-        if keys_pressed[pygame.K_UP] and not keys_pressed[pygame.K_DOWN]:
-            self.move(forward=True, delta_time=delta_time)
-        elif keys_pressed[pygame.K_DOWN] and not keys_pressed[pygame.K_UP]:
-            self.move(forward=False, delta_time=delta_time)
+            if keys_pressed[pygame.K_UP] and not keys_pressed[pygame.K_DOWN]:
+                self.move(forward=True, delta_time=delta_time)
+            elif keys_pressed[pygame.K_DOWN] and not keys_pressed[pygame.K_UP]:
+                self.move(forward=False, delta_time=delta_time)
 
-        if keys_pressed[pygame.K_LEFT]:
-            self.rotate('left', delta_time=delta_time)
-        if keys_pressed[pygame.K_RIGHT]:
-            self.rotate('right', delta_time=delta_time)
+            if keys_pressed[pygame.K_LEFT]:
+                self.rotate('left', delta_time=delta_time)
+            if keys_pressed[pygame.K_RIGHT]:
+                self.rotate('right', delta_time=delta_time)
 
         if self.is_firing:
             self.fire_timer += delta_time

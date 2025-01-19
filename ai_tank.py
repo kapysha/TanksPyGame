@@ -1,6 +1,5 @@
 from collections import deque
 import pygame
-
 from globals import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
 from tank import Tank
 
@@ -56,9 +55,9 @@ class AITank(Tank):
 
     def __init__(self, graph, target):
         super().__init__(all_sprites, ai_group)
-        self.tanks_images = [load_image('tanks/tank_1.png', (152, 51, 51, 0)),
-                             load_image('tanks/tank_2.png', (152, 51, 51, 0)),
-                             load_image('tanks/tank_3.png', (152, 51, 51, 0))]
+        self.fire_frames = [load_image('tanks/tank_1.png', (152, 51, 51, 0))[0],
+                            load_image('tanks/tank_2.png', (152, 51, 51, 0))[0],
+                            load_image('tanks/tank_3.png', (152, 51, 51, 0))[0]]
         self.original_image = AITank.original_image
         self.image = self.original_image
         self.mask = pygame.mask.from_surface(self.image)
@@ -72,8 +71,8 @@ class AITank(Tank):
         self.time_since_last_path = 0.0  # Таймер для обновления пути
 
         self.shooting_range = 350  # Пиксели
-        self.shooting_angle_threshold = 20  # Градусы
-        self.shoot_cooldown = 1.0
+        self.shooting_angle_threshold = 60  # Градусы
+        self.shoot_cooldown = 0.3
         self.time_since_last_shot = 0.0  # Таймер
 
     def find_grid_position(self, pos):
@@ -105,15 +104,17 @@ class AITank(Tank):
 
             if distance < 5:
                 self.path_index += 1
-                return
+                angle = 1
+            else:
+                angle = 5
 
             desired_angle = direction_vector.angle_to(
                 pygame.math.Vector2(0, -1))  # под каким углом направлен direction_vector относительно "вверх"
             angle_diff = (desired_angle - self.angle + 180) % 360 - 180  # Чтобы в диапазоне от 180 до -180
 
-            if angle_diff > 5:
+            if angle_diff > angle:
                 self.rotate('left', delta_time)
-            elif angle_diff < -5:
+            elif angle_diff < -angle:
                 self.rotate('right', delta_time)
             else:
                 self.angle = desired_angle
@@ -152,6 +153,9 @@ class AITank(Tank):
         return True  # Нет стен
 
     def update(self, delta_time, keys_pressed):
+        if not self.target.alive():
+            return  # Не делаем ничего, если цель уничтожена
+
         self.time_since_last_path += delta_time
         if self.time_since_last_path >= self.path_update_interval:
             self.update_path()
@@ -170,6 +174,7 @@ class AITank(Tank):
             self.fire_bullet(owner='ai')
             self.time_since_last_shot = 0.0
 
+        super().update(delta_time, None)
+
     def distance_to_player(self):
         return (self.pos - self.target.pos).length()
-

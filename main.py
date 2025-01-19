@@ -1,47 +1,131 @@
+import time
 import pygame
 from generate_maze import grid_cells
 from ai_tank import build_graph, AITank
 from tank import Tank
 from generate_maze import generate_maze
-from globals import all_sprites, players_group, bullets_group, ai_group, cols, rows, screen, clock
+from globals import all_sprites, players_group, cols, rows, clock, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT
 
 
 def main():
+    from particle import Explosion
+    pygame.font.init()
+
+    image_player_tank = Explosion.load_image_with_color('images/tank_player.png', (70, 255, 0, 0))
+    image_ai_tank = Explosion.load_image_with_color('images/tank_ai.png', (152, 51, 51, 0))
+
+    font = pygame.font.Font(None, 40)
+
+    player_wins = 0
+    ai_wins = 0
+
     generate_maze()
+
+    base_screen_size = (WIDTH, HEIGHT)
+    screen = pygame.Surface(base_screen_size)
+
+    additional_width = 20
+    additional_height = 100
+    big_screen_size = (WIDTH + additional_width, HEIGHT + additional_height)
+    big_screen = pygame.display.set_mode(big_screen_size)
+
+    button_width, button_height = 80, 30
+    button_x = 10
+    button_y = big_screen_size[1] - button_height - 10  # 20 пикселей от нижнего края
+    button_color = pygame.Color(96, 96, 96)
+    button_text_color = pygame.Color('white')
+    button_font = pygame.font.Font(None, 25)
+
+    def reset_battle():
+        nonlocal tank, ai_tank
+        tank.kill()
+        ai_tank.kill()
+        for bullet in bullets_group:
+            bullet.kill()
+        tank = Tank(all_sprites, players_group)
+        ai_tank = AITank(graph, tank)
 
     for cell in grid_cells:
         cell.draw()
 
     graph = build_graph(grid_cells, cols, rows)
-
     tank = Tank(all_sprites, players_group)
-    AITank(graph, tank)
+    ai_tank = AITank(graph, tank)
+
+    frozen = False
+    freeze_start_time = None
+    freeze_duration = 5
 
     running = True
     while running:
         current_delta_time = clock.tick(60) / 1000
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and not frozen:
                     tank.fire_bullet(owner='player')
 
-        all_sprites.update(current_delta_time, pygame.key.get_pressed())
+        if frozen:
+            if time.time() - freeze_start_time >= freeze_duration:
+                frozen = False
+                reset_battle()
+            all_sprites.update(current_delta_time, None)
+            screen.fill(pygame.Color('lightgrey'))
+            all_sprites.draw(screen)
+        else:
+            all_sprites.update(current_delta_time, pygame.key.get_pressed())
 
-        for bullet in bullets_group:
-            if bullet.owner == 'ai':
-                if pygame.sprite.spritecollide(bullet, players_group, False):
-                    print("В Игрока попали!")
-                    bullet.kill()
-            elif bullet.owner == 'player':
-                if pygame.sprite.spritecollide(bullet, ai_group, False):
-                    print("AI танк попали!")
-                    bullet.kill()
+            for bullet in bullets_group:
+                if bullet.owner == 'ai':
+                    if pygame.sprite.spritecollide(bullet, players_group, False):
+                        pos = tank.pos
+                        tank.kill()
+                        bullet.kill()
+                        kill_sound.play()
+                        Explosion(pos, (70, 255, 0, 0))
+                        ai_wins += 1
+                        frozen = True
+                        freeze_start_time = time.time()
 
-        screen.fill(pygame.Color('lightgrey'))
-        all_sprites.draw(screen)
+                elif bullet.owner == 'player':
+                    if pygame.sprite.spritecollide(bullet, ai_group, False):
+                        pos = ai_tank.pos
+                        ai_tank.kill()
+                        bullet.kill()
+                        kill_sound.play()
+                        Explosion(pos, (152, 51, 51, 0))
+                        player_wins += 1
+                        frozen = True
+                        freeze_start_time = time.time()
+
+            screen.fill(pygame.Color('lightgrey'))
+            all_sprites.draw(screen)
+
+        big_screen.fill('grey')
+
+        offset_x = (big_screen_size[0] - WIDTH) // 2
+        offset_y = 10
+
+        big_screen.blit(screen, (offset_x, offset_y))
+
+        big_screen.blit(image_player_tank, (WIDTH * 0.65, HEIGHT + 20))
+        big_screen.blit(image_ai_tank, (WIDTH * 0.2, HEIGHT + 20))
+
+        player_score_text = font.render(str(player_wins), True, pygame.Color('black'))
+        ai_score_text = font.render(str(ai_wins), True, pygame.Color('black'))
+
+        big_screen.blit(player_score_text, (WIDTH * 0.65 - 20, HEIGHT + 50))
+        big_screen.blit(ai_score_text, (WIDTH * 0.2 + 105, HEIGHT + 50))
+
+        pygame.draw.rect(big_screen, button_color, (button_x, button_y, button_width, button_height))
+        button_text = button_font.render('Выйти', True, button_text_color)
+        big_screen.blit(button_text, (button_x + (button_width - button_text.get_width()) // 2,
+                                      button_y + (button_height - button_text.get_height()) // 2 + 2))
+
         pygame.display.flip()
+
     pygame.quit()
 
 

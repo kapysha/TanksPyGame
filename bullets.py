@@ -1,5 +1,5 @@
+from globals import walls_group_horizontal, walls_group_vertical, all_sprites, bullets_group
 import pygame
-from main import all_sprites, bullets_group, walls_group_horizontal, walls_group_vertical
 
 
 class Bullets(pygame.sprite.Sprite):

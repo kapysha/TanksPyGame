@@ -1,5 +1,5 @@
 from random import choice
-from main import walls_group_horizontal, all_sprites, walls_group_vertical, TILE, rows, cols
+from globals import all_sprites, walls_group_vertical, TILE, cols, rows, walls_group_horizontal
 import pygame
 
 

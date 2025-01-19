@@ -1,7 +1,8 @@
 from collections import deque
 import pygame
+
+from globals import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
 from tank import Tank
-from main import walls_group_vertical, walls_group_horizontal, TILE, load_image, all_sprites, ai_group
 
 
 def build_graph(grid_cells, cols, rows):

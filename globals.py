@@ -21,8 +21,10 @@ kill_sound = pygame.mixer.Sound('sounds/kill.ogg')
 
 
 def load_image(path: str, rgb: tuple):
-    image = pygame.image.load(path).convert_alpha()
-    image.set_colorkey((255, 255, 255))
+    image = pygame.image.load(path)
+    image = image.convert()
+    colorkey = image.get_at((0, 0))
+    image.set_colorkey(colorkey)
     green_overlay = pygame.Surface(image.get_size(), pygame.SRCALPHA)
     green_overlay.fill(rgb)  # (R, G, B, A) – A=100 для прозрачности
     image.blit(green_overlay, (0, 0), special_flags=3)

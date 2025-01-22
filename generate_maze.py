@@ -87,6 +87,11 @@ stack = []
 
 def generate_maze():
     global current_cell
+
+    for cell in grid_cells:
+        cell.visited = False
+        cell.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
+
     current_cell.visited = True
     next_cell = current_cell.check_neighbors()
     while True:
@@ -101,3 +106,6 @@ def generate_maze():
             next_cell = current_cell.check_neighbors()
         else:
             break
+
+    for cell in grid_cells:
+        cell.draw()

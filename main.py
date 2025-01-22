@@ -1,6 +1,6 @@
 import time
 import pygame
-from generate_maze import grid_cells
+from generate_maze import grid_cells, Wall
 from ai_tank import build_graph, AITank
 from tank import Tank
 from generate_maze import generate_maze
@@ -37,16 +37,24 @@ def main():
     button_font = pygame.font.Font(None, 25)
 
     def reset_battle():
-        nonlocal tank, ai_tank
+        nonlocal tank, ai_tank, graph
         tank.kill()
         ai_tank.kill()
+
+        # очищаем все пульки с поля
         for bullet in bullets_group:
             bullet.kill()
+
+        # очищаем все стены
+        for sprite in all_sprites:
+            if isinstance(sprite, Wall):
+                sprite.kill()
+
+        generate_maze()
+        graph = build_graph(grid_cells, cols, rows)
+
         tank = Tank(all_sprites, players_group)
         ai_tank = AITank(graph, tank)
-
-    for cell in grid_cells:
-        cell.draw()
 
     graph = build_graph(grid_cells, cols, rows)
     tank = Tank(all_sprites, players_group)

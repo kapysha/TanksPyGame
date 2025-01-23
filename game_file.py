@@ -2,15 +2,16 @@ import time
 import pygame
 from generate_maze import grid_cells, Wall
 from ai_tank import build_graph, AITank
+from launcher import switch_screen
+from menu_with_buttons import Button, menu
 from tank import Tank
 from generate_maze import generate_maze
-from globals import all_sprites, players_group, cols, rows, clock, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT
+from globals import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
+    WHITE, clock
+from particle import Explosion
 
 
-def main():
-    from particle import Explosion
-    pygame.font.init()
-
+def play():
     image_player_tank = Explosion.load_image_with_color('images/tank_player.png', (70, 255, 0, 0))
     image_ai_tank = Explosion.load_image_with_color('images/tank_ai.png', (152, 51, 51, 0))
 
@@ -29,12 +30,35 @@ def main():
     big_screen_size = (WIDTH + additional_width, HEIGHT + additional_height)
     big_screen = pygame.display.set_mode(big_screen_size)
 
-    button_width, button_height = 80, 30
-    button_x = 10
-    button_y = big_screen_size[1] - button_height - 10  # 20 пикселей от нижнего края
-    button_color = pygame.Color(96, 96, 96)
-    button_text_color = pygame.Color('white')
-    button_font = pygame.font.Font(None, 25)
+    def exit_play():
+        nonlocal running, tank, ai_tank
+        tank.kill()
+        ai_tank.kill()
+
+        # очищаем все пульки с поля
+        for bullet in bullets_group:
+            bullet.kill()
+
+        # очищаем все стены
+        for sprite in all_sprites:
+            if isinstance(sprite, Wall):
+                sprite.kill()
+
+        running = False
+        switch_screen(menu)
+
+    exit_button = Button(
+        x=10,
+        y=big_screen_size[1] - 40,
+        width=80,
+        height=30,
+        text="Выйти",
+        color=(128, 128, 128),
+        hover_color=(160, 160, 160),
+        text_color=WHITE,
+        action=exit_play,
+        text_size=28
+    )
 
     def reset_battle():
         nonlocal tank, ai_tank, graph
@@ -74,6 +98,9 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not frozen:
                     tank.fire_bullet(owner='player')
+
+            exit_button.check_hover(pygame.mouse.get_pos())
+            exit_button.handle_event(event)
 
         if frozen:
             if time.time() - freeze_start_time >= freeze_duration:
@@ -127,15 +154,8 @@ def main():
         big_screen.blit(player_score_text, (WIDTH * 0.65 - 20, HEIGHT + 50))
         big_screen.blit(ai_score_text, (WIDTH * 0.2 + 105, HEIGHT + 50))
 
-        pygame.draw.rect(big_screen, button_color, (button_x, button_y, button_width, button_height))
-        button_text = button_font.render('Выйти', True, button_text_color)
-        big_screen.blit(button_text, (button_x + (button_width - button_text.get_width()) // 2,
-                                      button_y + (button_height - button_text.get_height()) // 2 + 2))
+        exit_button.draw(big_screen)
 
         pygame.display.flip()
 
     pygame.quit()
-
-
-if __name__ == '__main__':
-    main()

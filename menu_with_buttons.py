@@ -1,9 +1,11 @@
 import pygame
 import sys
 
+from globals import BLACK, LIGHT_GRAY, GRAY
+
 
 class Button:
-    def __init__(self, x, y, width, height, text, color, hover_color, text_color=(0, 0, 0), action=None):
+    def __init__(self, x, y, width, height, text, color, hover_color, text_color=(0, 0, 0), action=None, text_size=36):
         self.x = x
         self.y = y
         self.width = width
@@ -15,13 +17,14 @@ class Button:
         self.rect = pygame.Rect(x, y, width, height)
         self.is_hovered = False
         self.action = action
+        self.text_size = text_size
 
     def draw(self, screen):
         current_color = self.hover_color if self.is_hovered else self.color
         pygame.draw.rect(screen, current_color, self.rect, border_radius=10)  # Скругленные углы
         pygame.draw.rect(screen, (50, 50, 50), self.rect, 2, border_radius=10)  # Граница кнопки
 
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, self.text_size)
         text_surface = font.render(self.text, True, self.text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
@@ -35,47 +38,35 @@ class Button:
                 self.action()
 
 
-pygame.init()
+def menu():
+    from launcher import switch_screen
+    from game_file import play
 
-WIDTH, HEIGHT = 630, 630
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("ТАНКИ")
+    pygame.init()
+    pygame.font.init()
 
-WHITE = (255, 255, 255)
-GRAY = (200, 200, 200)
-DARK_GRAY = (100, 100, 100)
-BLACK = (0, 0, 0)
-LIGHT_GRAY = (230, 230, 230)
-background_color = pygame.image.load('images/background.png')
-background_color = pygame.transform.scale(background_color, (WIDTH, HEIGHT))
-
-
-def start_game():
-    print("Начало игры")
-
-
-def open_shop():
-    print("Магазин открыт")
-
-
-def view_statistics():
-    print("Просмотр статистики")
-
-
-def exit_game():
-    pygame.quit()
-    sys.exit()
-
-
-def main_menu():
-    start_button = Button(WIDTH / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
-                          action=start_game)
-    shop_button = Button(WIDTH / 2 - 190, 425, 180, 60, "Магазин", LIGHT_GRAY, GRAY, text_color=BLACK, action=open_shop)
-    statistics_button = Button(WIDTH / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,
-                               action=view_statistics)
-    exit_button = Button(WIDTH / 2 - 125, 495, 250, 60, "Выйти", LIGHT_GRAY, GRAY, text_color=BLACK, action=exit_game)
+    SIZE = WIDTH, HEIGHT = 650, 640
+    screen = pygame.display.set_mode(SIZE)
+    pygame.display.set_caption("ТАНКИ")
+    background_color = pygame.image.load('images/background.png')
+    background_color = pygame.transform.scale(background_color, SIZE)
 
     running = True
+
+    def exit_menu(screen_new):
+        nonlocal running
+        running = False
+        switch_screen(screen_new)
+
+    start_button = Button(WIDTH / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
+                          action=lambda: exit_menu(play))
+    instruction_button = Button(WIDTH / 2 - 190, 425, 180, 60, "Инструкция", LIGHT_GRAY, GRAY, text_color=BLACK,
+                                action=lambda: print("Магазин открыт"))
+    statistics_button = Button(WIDTH / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,
+                               action=lambda: print("Просмотр статистики"))
+    exit_button = Button(WIDTH / 2 - 125, 495, 250, 60, "Выйти", LIGHT_GRAY, GRAY, text_color=BLACK,
+                         action=lambda: exit_menu(None))
+
     while running:
         screen.blit(background_color, (0, 0))
 
@@ -90,14 +81,11 @@ def main_menu():
                 pygame.quit()
                 sys.exit()
 
-            for btn in [start_button, shop_button, statistics_button, exit_button]:
+            for btn in [start_button, instruction_button, statistics_button, exit_button]:
                 btn.handle_event(event)
 
-        for btn in [start_button, shop_button, statistics_button, exit_button]:
+        for btn in [start_button, instruction_button, statistics_button, exit_button]:
             btn.check_hover(pygame.mouse.get_pos())
             btn.draw(screen)
 
         pygame.display.flip()
-
-
-main_menu()

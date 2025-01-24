@@ -76,8 +76,9 @@ class Tank(pygame.sprite.Sprite):
 
                 collision = False
                 for sprite in all_sprites:
-                    if isinstance(sprite, Wall) or isinstance(sprite, Tank):
-                        if pygame.sprite.collide_mask(temp_sprite, sprite):
+                    if isinstance(sprite, Wall):
+                        if pygame.sprite.collide_mask(temp_sprite, sprite) or pygame.sprite.spritecollide(
+                                sprite, players_group, dokill=False):
                             collision = True
                             break  # Если столкновение, прекращаем проверку
 

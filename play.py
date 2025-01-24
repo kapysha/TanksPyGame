@@ -9,7 +9,7 @@ from tank import Tank
 from generate_maze import generate_maze
 from settings import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
     WHITE, clock
-from particle import Explosion
+from particle import Explosion, Particle
 
 
 def play():
@@ -43,6 +43,10 @@ def play():
         # очищаем все стены
         for sprite in all_sprites:
             if isinstance(sprite, Wall):
+                sprite.kill()
+
+        for sprite in all_sprites:
+            if isinstance(sprite, Particle):
                 sprite.kill()
 
         running = False
@@ -87,7 +91,7 @@ def play():
 
     frozen = False
     freeze_start_time = None
-    freeze_duration = 5
+    freeze_duration = 3
 
     running = True
     while running:
@@ -126,6 +130,9 @@ def play():
                         frozen = True
                         freeze_start_time = time.time()
 
+                        for bullet in bullets_group:
+                            bullet.kill()
+
                 elif bullet.owner == 'player':
                     if pygame.sprite.spritecollide(bullet, ai_group, False):
                         pos = ai_tank.pos
@@ -136,6 +143,9 @@ def play():
                         player_wins += 1
                         frozen = True
                         freeze_start_time = time.time()
+
+                        for bullet in bullets_group:
+                            bullet.kill()
 
             screen.fill(pygame.Color('lightgrey'))
             all_sprites.draw(screen)

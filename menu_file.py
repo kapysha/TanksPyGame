@@ -1,7 +1,6 @@
 import pygame
 import sys
-
-from globals import BLACK, LIGHT_GRAY, GRAY
+from globals import BLACK, LIGHT_GRAY, GRAY, SIZE_MENU, WIDTH_MENU
 
 
 class Button:
@@ -41,30 +40,29 @@ class Button:
 def menu():
     from launcher import switch_screen
     from game_file import play
+    from instruction import instructions
+    from statistics import statistics
 
-    pygame.init()
-    pygame.font.init()
-
-    SIZE = WIDTH, HEIGHT = 650, 640
-    screen = pygame.display.set_mode(SIZE)
-    pygame.display.set_caption("ТАНКИ")
+    screen = pygame.display.set_mode(SIZE_MENU)
     background_color = pygame.image.load('images/background.png')
-    background_color = pygame.transform.scale(background_color, SIZE)
+    background_color = pygame.transform.scale(background_color, SIZE_MENU)
 
     running = True
 
     def exit_menu(screen_new):
         nonlocal running
         running = False
-        switch_screen(screen_new)
+        if not screen_new:
+            sys.exit()
+        return switch_screen(screen_new)
 
-    start_button = Button(WIDTH / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
+    start_button = Button(WIDTH_MENU / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
                           action=lambda: exit_menu(play))
-    instruction_button = Button(WIDTH / 2 - 190, 425, 180, 60, "Инструкция", LIGHT_GRAY, GRAY, text_color=BLACK,
-                                action=lambda: print("Магазин открыт"))
-    statistics_button = Button(WIDTH / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,
-                               action=lambda: print("Просмотр статистики"))
-    exit_button = Button(WIDTH / 2 - 125, 495, 250, 60, "Выйти", LIGHT_GRAY, GRAY, text_color=BLACK,
+    instruction_button = Button(WIDTH_MENU / 2 - 190, 425, 180, 60, "Инструкция", LIGHT_GRAY, GRAY, text_color=BLACK,
+                                action=lambda: exit_menu(instructions))
+    statistics_button = Button(WIDTH_MENU / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,
+                               action=lambda: exit_menu(statistics))
+    exit_button = Button(WIDTH_MENU / 2 - 125, 495, 250, 60, "Выйти", LIGHT_GRAY, GRAY, text_color=BLACK,
                          action=lambda: exit_menu(None))
 
     while running:
@@ -72,7 +70,7 @@ def menu():
 
         font = pygame.font.Font(None, 72)
         text_surface = font.render("ТАНКИ", True, BLACK)
-        text_rect = text_surface.get_rect(center=(WIDTH / 2, 60))
+        text_rect = text_surface.get_rect(center=(WIDTH_MENU / 2, 60))
         screen.blit(text_surface, text_rect)
 
         for event in pygame.event.get():
@@ -89,3 +87,4 @@ def menu():
             btn.draw(screen)
 
         pygame.display.flip()
+

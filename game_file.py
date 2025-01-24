@@ -1,9 +1,10 @@
+import sys
 import time
 import pygame
 from generate_maze import grid_cells, Wall
 from ai_tank import build_graph, AITank
 from launcher import switch_screen
-from menu_with_buttons import Button, menu
+from menu_file import Button, menu
 from tank import Tank
 from generate_maze import generate_maze
 from globals import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
@@ -45,7 +46,7 @@ def play():
                 sprite.kill()
 
         running = False
-        switch_screen(menu)
+        return switch_screen(menu)
 
     exit_button = Button(
         x=10,
@@ -95,6 +96,7 @@ def play():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not frozen:
                     tank.fire_bullet(owner='player')
@@ -157,5 +159,3 @@ def play():
         exit_button.draw(big_screen)
 
         pygame.display.flip()
-
-    pygame.quit()

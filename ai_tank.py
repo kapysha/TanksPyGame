@@ -72,7 +72,7 @@ class AITank(Tank):
 
         self.shooting_range = 350  # Пиксели
         self.shooting_angle_threshold = 60  # Градусы
-        self.shoot_cooldown = 0.2
+        self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0.0  # Таймер
 
         # Скорость танка

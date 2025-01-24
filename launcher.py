@@ -1,12 +1,12 @@
 import pygame
 from typing import Callable
-
-from globals import RES
-from menu_with_buttons import menu
+from globals import SIZE_MENU
+from menu_file import menu
 
 pygame.init()
 pygame.font.init()
-pygame.display.set_mode(RES)
+pygame.display.set_mode(SIZE_MENU)
+pygame.display.set_caption("Танчики")
 
 current_screen: Callable | None = None
 
@@ -14,6 +14,7 @@ current_screen: Callable | None = None
 def switch_screen(screen: Callable | None):
     global current_screen
     current_screen = screen
+
 
 
 switch_screen(menu)

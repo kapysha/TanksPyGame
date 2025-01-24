@@ -1,12 +1,11 @@
 import pygame
 from launcher import switch_screen
-from globals import LIGHT_GRAY, BLACK, SIZE_MENU
-from menu_file import menu, Button
+from settings import LIGHT_GRAY, BLACK, SIZE_MENU
+from menu import menu, Button
 
 
-def instructions():
+def instruction():
     screen = pygame.display.set_mode(SIZE_MENU)
-    pygame.display.set_caption("Инструкция")
 
     running = True
 

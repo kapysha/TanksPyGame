@@ -1,6 +1,6 @@
 import pygame
 import random
-from globals import all_sprites
+from settings import all_sprites
 
 
 class Particle(pygame.sprite.Sprite):

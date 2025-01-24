@@ -1,7 +1,7 @@
 import pygame
 from typing import Callable
-from globals import SIZE_MENU
-from menu_file import menu
+from settings import SIZE_MENU
+from menu import menu
 
 pygame.init()
 pygame.font.init()
@@ -14,7 +14,6 @@ current_screen: Callable | None = None
 def switch_screen(screen: Callable | None):
     global current_screen
     current_screen = screen
-
 
 
 switch_screen(menu)

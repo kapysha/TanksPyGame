@@ -4,10 +4,10 @@ import pygame
 from generate_maze import grid_cells, Wall
 from ai_tank import build_graph, AITank
 from launcher import switch_screen
-from menu_file import Button, menu
+from menu import Button, menu
 from tank import Tank
 from generate_maze import generate_maze
-from globals import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
+from settings import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
     WHITE, clock
 from particle import Explosion
 

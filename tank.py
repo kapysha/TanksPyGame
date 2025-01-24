@@ -2,7 +2,7 @@ import random
 import pygame
 from bullets import Bullets
 from generate_maze import Wall, grid_cells
-from globals import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
+from settings import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
 
 
 class Tank(pygame.sprite.Sprite):

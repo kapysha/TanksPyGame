@@ -1,7 +1,7 @@
 import pygame
 from launcher import switch_screen
-from globals import LIGHT_GRAY, BLACK, SIZE_MENU
-from menu_file import Button, menu
+from settings import LIGHT_GRAY, BLACK, SIZE_MENU
+from menu import Button, menu
 
 game_stats = {
     "total_battles": 0,
@@ -16,7 +16,6 @@ game_stats = {
 
 def statistics():
     screen = pygame.display.set_mode(SIZE_MENU)
-    pygame.display.set_caption("Статистика")
 
     running = True
 

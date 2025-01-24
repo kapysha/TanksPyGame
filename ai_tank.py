@@ -1,6 +1,6 @@
 from collections import deque
 import pygame
-from globals import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
+from settings import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
 from tank import Tank
 
 

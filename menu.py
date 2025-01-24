@@ -1,6 +1,6 @@
 import pygame
 import sys
-from globals import BLACK, LIGHT_GRAY, GRAY, SIZE_MENU, WIDTH_MENU
+from settings import BLACK, LIGHT_GRAY, GRAY, SIZE_MENU, WIDTH_MENU
 
 
 class Button:
@@ -39,8 +39,8 @@ class Button:
 
 def menu():
     from launcher import switch_screen
-    from game_file import play
-    from instruction import instructions
+    from play import play
+    from instruction import instruction
     from statistics import statistics
 
     screen = pygame.display.set_mode(SIZE_MENU)
@@ -59,7 +59,7 @@ def menu():
     start_button = Button(WIDTH_MENU / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
                           action=lambda: exit_menu(play))
     instruction_button = Button(WIDTH_MENU / 2 - 190, 425, 180, 60, "Инструкция", LIGHT_GRAY, GRAY, text_color=BLACK,
-                                action=lambda: exit_menu(instructions))
+                                action=lambda: exit_menu(instruction))
     statistics_button = Button(WIDTH_MENU / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,
                                action=lambda: exit_menu(statistics))
     exit_button = Button(WIDTH_MENU / 2 - 125, 495, 250, 60, "Выйти", LIGHT_GRAY, GRAY, text_color=BLACK,

@@ -1,6 +1,6 @@
 import pygame
 import random
-from settings import all_sprites
+from config.settings import all_sprites
 
 
 class Particle(pygame.sprite.Sprite):
@@ -26,9 +26,9 @@ class Particle(pygame.sprite.Sprite):
 class Explosion:
     def __init__(self, pos, rgb: tuple[int, int, int, int]):
         self.particles = []
-        fragment_1 = self.load_image_with_color('fragments/fragment_1.png', rgb)
-        fragment_2 = self.load_image_with_color('fragments/fragment_2.png', rgb)
-        fragment_3 = self.load_image_with_color('fragments/fragment_3.png', rgb)
+        fragment_1 = self.load_image_with_color('assets/fragments/fragment_1.png', rgb)
+        fragment_2 = self.load_image_with_color('assets/fragments/fragment_2.png', rgb)
+        fragment_3 = self.load_image_with_color('assets/fragments/fragment_3.png', rgb)
         fragment_images = [fragment_1, fragment_2, fragment_3]
         for _ in range(20):
             particle = Particle(pos, fragment_images)

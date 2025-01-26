@@ -1,18 +1,19 @@
 import random
 import pygame
-from bullets import Bullets
-from generate_maze import Wall, grid_cells
-from settings import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
+from database.db_queries import add_shots
+from game_logic.bullets import Bullets
+from game_logic.generate_maze import Wall, grid_cells
+from config.settings import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
 
 
 class Tank(pygame.sprite.Sprite):
-    image, original_image, mask = load_image('tanks/tank_1.png', (70, 255, 0, 0))
+    image, original_image, mask = load_image('assets/tanks_images/tank_1.png', (70, 255, 0, 0))
 
     def __init__(self, *groups):
         super().__init__(*groups)
-        self.fire_frames = [load_image('tanks/tank_1.png', (70, 255, 0, 0))[0],
-                            load_image('tanks/tank_2.png', (70, 255, 0, 0))[0],
-                            load_image('tanks/tank_3.png', (70, 255, 0, 0))[0]]
+        self.fire_frames = [load_image('assets/tanks_images/tank_1.png', (70, 255, 0, 0))[0],
+                            load_image('assets/tanks_images/tank_2.png', (70, 255, 0, 0))[0],
+                            load_image('assets/tanks_images/tank_3.png', (70, 255, 0, 0))[0]]
         self.original_image = Tank.original_image
         self.image = self.original_image
         self.angle = 0
@@ -57,36 +58,36 @@ class Tank(pygame.sprite.Sprite):
         return False  # Нет столкновения
 
     def random_position(self):
+        from game_logic.ai_tank import AITank
         available_cells = [
             cell for cell in grid_cells
             if not all(cell.walls.values())  # Клетка с хотя бы одним проходом
         ]
-        if available_cells:
-            for _ in range(100):
-                random_cell = random.choice(available_cells)
-                pos_x = random_cell.x * TILE + TILE // 2
-                pos_y = random_cell.y * TILE + TILE // 2
+        for _ in range(100):
+            random_cell = random.choice(available_cells)
+            pos_x = random_cell.x * TILE + TILE // 2
+            pos_y = random_cell.y * TILE + TILE // 2
 
-                temp_pos = pygame.math.Vector2(pos_x, pos_y)
+            temp_pos = pygame.math.Vector2(pos_x, pos_y)
 
-                temp_sprite = pygame.sprite.Sprite()
-                temp_sprite.image = self.image
-                temp_sprite.rect = self.image.get_rect(center=temp_pos)
-                temp_sprite.mask = self.mask
+            temp_sprite = pygame.sprite.Sprite()
+            temp_sprite.image = self.image
+            temp_sprite.rect = self.image.get_rect(center=temp_pos)
+            temp_sprite.mask = self.mask
 
-                collision = False
-                for sprite in all_sprites:
-                    if isinstance(sprite, Wall):
-                        if pygame.sprite.collide_mask(temp_sprite, sprite) or pygame.sprite.spritecollide(
-                                sprite, players_group, dokill=False):
-                            collision = True
-                            break  # Если столкновение, прекращаем проверку
+            collision = False
+            for sprite in all_sprites:
+                if isinstance(sprite, Wall):
+                    if pygame.sprite.collide_mask(temp_sprite, sprite):
+                        collision = True
 
-                if not collision:
-                    return pos_x, pos_y
+                if isinstance(sprite, Tank) and isinstance(self, AITank):
+                    if pygame.sprite.collide_mask(temp_sprite, sprite):
+                        collision = True
 
-            # Если не удалось найти подходящую позицию
-            return TILE // 2, TILE // 2
+            if not collision:
+                return pos_x, pos_y
+
         return TILE // 2, TILE // 2
 
     def move(self, forward, delta_time):
@@ -156,6 +157,7 @@ class Tank(pygame.sprite.Sprite):
             bullet_pos = self.pos + offset
 
             Bullets(bullet_pos, self.angle, owner=owner)
+            add_shots(owner)
             bullet_sound.play()
 
     def update(self, delta_time, keys_pressed):

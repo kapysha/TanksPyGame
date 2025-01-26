@@ -1,17 +1,8 @@
 import pygame
+from database.db_queries import get_info
 from launcher import switch_screen
-from settings import LIGHT_GRAY, BLACK, SIZE_MENU
-from menu import Button, menu
-
-game_stats = {
-    "total_battles": 0,
-    "player_wins": 0,
-    "ai_wins": 0,
-    "player_shots": 0,
-    "ai_shots": 0,
-    "longest_battle_time": 0,
-    "shortest_battle_time": 0,
-}
+from config.settings import LIGHT_GRAY, BLACK, SIZE_MENU
+from screens.menu import Button, menu
 
 
 def statistics():
@@ -42,20 +33,20 @@ def statistics():
         action=exit_to_menu,
     )
 
+    game_stats = get_info()
+
     while running:
         screen.fill(LIGHT_GRAY)
         screen.blit(title_text, title_rect)
 
         stats_text = [
-            f"Всего боёв: {game_stats['total_battles']}",
-            f"Победы игрока: {game_stats['player_wins']}",
-            f"Победы AI: {game_stats['ai_wins']}",
-            f"Выстрелы игрока: {game_stats['player_shots']}",
-            f"Выстрелы AI: {game_stats['ai_shots']}",
-            f"Самый длинный бой: {game_stats['longest_battle_time']} сек.",
-            f"Самый короткий бой: {game_stats['shortest_battle_time']} сек." if game_stats[
-                                                                                    'shortest_battle_time'] != float(
-                'inf') else "Самый короткий бой: N/A",
+            f"Всего боёв: {game_stats[0]}",
+            f"Победы игрока: {game_stats[1]}",
+            f"Победы AI: {game_stats[2]}",
+            f"Количество выстрелов игрока: {game_stats[3]}",
+            f"Количество выстрелов AI: {game_stats[4]}",
+            f"Самый короткий бой: {game_stats[5]} сек.",
+            f"Самый длинный бой: {game_stats[6]} сек.",
         ]
 
         y_offset = 120

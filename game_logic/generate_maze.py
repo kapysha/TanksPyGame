@@ -1,5 +1,5 @@
 from random import choice
-from settings import all_sprites, walls_group_vertical, TILE, cols, rows, walls_group_horizontal
+from config.settings import all_sprites, walls_group_vertical, TILE, cols, rows, walls_group_horizontal
 import pygame
 
 

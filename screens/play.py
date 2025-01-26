@@ -1,25 +1,28 @@
 import sys
 import time
 import pygame
-from generate_maze import grid_cells, Wall
-from ai_tank import build_graph, AITank
+from database.db_queries import update_battle_stats
+from game_logic.generate_maze import grid_cells, Wall
+from game_logic.ai_tank import build_graph, AITank
 from launcher import switch_screen
-from menu import Button, menu
-from tank import Tank
-from generate_maze import generate_maze
-from settings import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
-    WHITE, clock
-from particle import Explosion, Particle
+from screens.menu import Button, menu
+from game_logic.tank import Tank
+from game_logic.generate_maze import generate_maze
+from config.settings import all_sprites, players_group, cols, rows, bullets_group, ai_group, kill_sound, WIDTH, HEIGHT, \
+    WHITE, clock, ringtone
+from effects.particle import Explosion, Particle
 
 
 def play():
-    image_player_tank = Explosion.load_image_with_color('images/tank_player.png', (70, 255, 0, 0))
-    image_ai_tank = Explosion.load_image_with_color('images/tank_ai.png', (152, 51, 51, 0))
+    ringtone.stop()
+    image_player_tank = Explosion.load_image_with_color('assets/images/tank_player.png', (70, 255, 0, 0))
+    image_ai_tank = Explosion.load_image_with_color('assets/images/tank_ai.png', (152, 51, 51, 0))
 
     font = pygame.font.Font(None, 40)
 
     player_wins = 0
     ai_wins = 0
+    battle_start_time = time.time()
 
     generate_maze()
 
@@ -66,7 +69,7 @@ def play():
     )
 
     def reset_battle():
-        nonlocal tank, ai_tank, graph
+        nonlocal tank, ai_tank, graph, battle_start_time
         tank.kill()
         ai_tank.kill()
 
@@ -84,6 +87,8 @@ def play():
 
         tank = Tank(all_sprites, players_group)
         ai_tank = AITank(graph, tank)
+
+        battle_start_time = time.time()
 
     graph = build_graph(grid_cells, cols, rows)
     tank = Tank(all_sprites, players_group)
@@ -109,9 +114,11 @@ def play():
             exit_button.handle_event(event)
 
         if frozen:
+            ai_tank.fix()
             if time.time() - freeze_start_time >= freeze_duration:
                 frozen = False
                 reset_battle()
+
             all_sprites.update(current_delta_time, None)
             screen.fill(pygame.Color('lightgrey'))
             all_sprites.draw(screen)
@@ -133,6 +140,9 @@ def play():
                         for bullet in bullets_group:
                             bullet.kill()
 
+                        battle_duration = time.time() - battle_start_time
+                        update_battle_stats('ai', battle_duration)
+
                 elif bullet.owner == 'player':
                     if pygame.sprite.spritecollide(bullet, ai_group, False):
                         pos = ai_tank.pos
@@ -146,6 +156,9 @@ def play():
 
                         for bullet in bullets_group:
                             bullet.kill()
+
+                        battle_duration = time.time() - battle_start_time
+                        update_battle_stats('player', battle_duration)
 
             screen.fill(pygame.Color('lightgrey'))
             all_sprites.draw(screen)

@@ -1,4 +1,4 @@
-from settings import walls_group_horizontal, walls_group_vertical, all_sprites, bullets_group
+from config.settings import walls_group_horizontal, walls_group_vertical, all_sprites, bullets_group
 import pygame
 
 

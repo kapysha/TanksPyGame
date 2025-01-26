@@ -1,7 +1,7 @@
 import pygame
 from launcher import switch_screen
-from settings import LIGHT_GRAY, BLACK, SIZE_MENU
-from menu import menu, Button
+from config.settings import LIGHT_GRAY, BLACK, SIZE_MENU
+from screens.menu import menu, Button
 
 
 def instruction():

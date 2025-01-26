@@ -1,7 +1,7 @@
 from collections import deque
 import pygame
-from settings import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
-from tank import Tank
+from config.settings import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
+from game_logic.tank import Tank
 
 
 def build_graph(grid_cells, cols, rows):
@@ -51,13 +51,13 @@ def find_path(graph, start, end):
 
 
 class AITank(Tank):
-    image, original_image, mask = load_image('tanks/tank_1.png', (152, 51, 51, 0))
+    image, original_image, mask = load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))
 
     def __init__(self, graph, target):
         super().__init__(all_sprites, ai_group)
-        self.fire_frames = [load_image('tanks/tank_1.png', (152, 51, 51, 0))[0],
-                            load_image('tanks/tank_2.png', (152, 51, 51, 0))[0],
-                            load_image('tanks/tank_3.png', (152, 51, 51, 0))[0]]
+        self.fire_frames = [load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))[0],
+                            load_image('assets/tanks_images/tank_2.png', (152, 51, 51, 0))[0],
+                            load_image('assets/tanks_images/tank_3.png', (152, 51, 51, 0))[0]]
         self.original_image = AITank.original_image
         self.image = self.original_image
         self.mask = pygame.mask.from_surface(self.image)
@@ -183,3 +183,8 @@ class AITank(Tank):
 
     def distance_to_player(self):
         return (self.pos - self.target.pos).length()
+
+    def fix(self):
+        self.image = pygame.transform.rotate(self.fire_frames[0], self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+        self.mask = pygame.mask.from_surface(self.image)

@@ -1,7 +1,8 @@
 import pygame
 from typing import Callable
-from settings import SIZE_MENU
-from menu import menu
+from config.settings import SIZE_MENU
+from database.db_config import create_db
+from screens.menu import menu
 
 pygame.init()
 pygame.font.init()
@@ -16,7 +17,9 @@ def switch_screen(screen: Callable | None):
     current_screen = screen
 
 
+create_db()
 switch_screen(menu)
+
 while current_screen is not None:
     current_screen()
 pygame.quit()

@@ -1,4 +1,6 @@
 import random
+import time
+
 import pygame
 from database.db_queries import add_shots
 from game_logic.bullets import Bullets
@@ -33,6 +35,8 @@ class Tank(pygame.sprite.Sprite):
         # Скорость поворота
         self.rotation_speed = 220
 
+        self.last_fire_time = 0.0  # Время последнего выстрела
+
     def check_collision(self, movement_vector) -> bool:
         new_pos = self.pos + movement_vector
         temp_rect = self.image.get_rect(center=new_pos)
@@ -58,7 +62,6 @@ class Tank(pygame.sprite.Sprite):
         return False  # Нет столкновения
 
     def random_position(self):
-        from game_logic.ai_tank import AITank
         available_cells = [
             cell for cell in grid_cells
             if not all(cell.walls.values())  # Клетка с хотя бы одним проходом
@@ -81,9 +84,8 @@ class Tank(pygame.sprite.Sprite):
                     if pygame.sprite.collide_mask(temp_sprite, sprite):
                         collision = True
 
-                if isinstance(sprite, Tank) and isinstance(self, AITank):
-                    if pygame.sprite.collide_mask(temp_sprite, sprite):
-                        collision = True
+                if isinstance(sprite, Tank) and pygame.sprite.collide_mask(temp_sprite, sprite):
+                    collision = True
 
             if not collision:
                 return pos_x, pos_y
@@ -148,17 +150,22 @@ class Tank(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
 
     def fire_bullet(self, owner='player'):
-        if not self.is_firing:
-            self.is_firing = True
-            self.current_fire_frame = 0
-            self.fire_timer = 0.0
+        current_time = time.time()
+        if current_time - self.last_fire_time >= (0 if owner == 'ai' else 1.0):
+            if not self.is_firing:
+                self.is_firing = True
+                self.current_fire_frame = 0
+                self.fire_timer = 0.0
 
-            offset = pygame.math.Vector2(0, -self.rect.height // 3).rotate(-self.angle)
-            bullet_pos = self.pos + offset
+                offset = pygame.math.Vector2(0, -self.rect.height // 3).rotate(-self.angle)
+                bullet_pos = self.pos + offset
 
-            Bullets(bullet_pos, self.angle, owner=owner)
-            add_shots(owner)
-            bullet_sound.play()
+                Bullets(bullet_pos, self.angle, owner=owner)
+                add_shots(owner)
+                bullet_sound.play()
+
+                # Обновляем время последнего выстрела
+                self.last_fire_time = current_time
 
     def update(self, delta_time, keys_pressed):
         if keys_pressed:
@@ -182,9 +189,9 @@ class Tank(pygame.sprite.Sprite):
                 if self.current_fire_frame < len(self.fire_frames):
                     self.image = pygame.transform.rotate(self.fire_frames[self.current_fire_frame], self.angle)
                     self.rect = self.image.get_rect(center=self.rect.center)
-                    self.mask = pygame.mask.from_surface(self.image)
+                    self.mask = pygame.mask.from_surface(self.original_image)
                 else:
                     self.is_firing = False
                     self.image = pygame.transform.rotate(self.original_image, self.angle)
                     self.rect = self.image.get_rect(center=self.rect.center)
-                    self.mask = pygame.mask.from_surface(self.image)
+                    self.mask = pygame.mask.from_surface(self.original_image)

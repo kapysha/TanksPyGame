@@ -46,7 +46,7 @@ class VolumeControl:
         self.y = y
         self.volume = ringtone.get_volume()  # Инициализация громкости текущим значением
         self.volume_images = {
-            "mute": pygame.image.load("assets/volumes_images/volume_3.png"),
+            "mute": pygame.image.load("assets/volumes_images/volume_2.png"),
             "sound": pygame.image.load("assets/volumes_images/volume_1.png"),
         }
 

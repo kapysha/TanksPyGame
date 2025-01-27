@@ -17,7 +17,7 @@ class Bullets(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(pos)
         self.velocity = pygame.math.Vector2(0, -1).rotate(-angle) * self.speed
 
-        self.spawn_time = pygame.time.get_ticks() + 9000
+        self.spawn_time = pygame.time.get_ticks() + 5000
 
     def update(self, delta_time, _):
         if pygame.time.get_ticks() >= self.spawn_time:

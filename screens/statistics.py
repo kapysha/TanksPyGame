@@ -1,5 +1,5 @@
 import pygame
-from database.db_queries import get_info
+from database.queries import get_info
 from launcher import switch_screen
 from config.settings import LIGHT_GRAY, BLACK, SIZE_MENU
 from screens.menu import Button, menu
@@ -41,10 +41,13 @@ def statistics():
 
         stats_text = [
             f"Всего боёв: {game_stats[0]}",
+            "",
             f"Победы игрока: {game_stats[1]}",
             f"Победы AI: {game_stats[2]}",
+            "",
             f"Количество выстрелов игрока: {game_stats[3]}",
             f"Количество выстрелов AI: {game_stats[4]}",
+            "",
             f"Самый короткий бой: {game_stats[5]} сек.",
             f"Самый длинный бой: {game_stats[6]} сек.",
         ]
@@ -53,7 +56,10 @@ def statistics():
         for stat in stats_text:
             text_surface = font_text.render(stat, True, BLACK)
             screen.blit(text_surface, (50, y_offset))
-            y_offset += 40
+            if not stat:
+                y_offset += 15
+            else:
+                y_offset += 40
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

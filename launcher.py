@@ -1,7 +1,7 @@
 import pygame
 from typing import Callable
 from config.settings import SIZE_MENU
-from database.db_config import create_db
+from database.config import create_db
 from screens.menu import menu
 
 pygame.init()

@@ -1,5 +1,5 @@
 from sqlalchemy import update, select
-from database.db_config import session, Main
+from database.config import session, Main
 import threading
 
 

@@ -1,8 +1,7 @@
 import random
 import time
-
 import pygame
-from database.db_queries import add_shots
+from database.queries import add_shots
 from game_logic.bullets import Bullets
 from game_logic.generate_maze import Wall, grid_cells
 from config.settings import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
@@ -22,7 +21,6 @@ class Tank(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(self.random_position())
         self.rect.center = self.pos
-        self.is_moving_forward = True  # для отслеживания направления движения
         self.mask = pygame.mask.from_surface(self.image)
 
         self.current_fire_frame = 0
@@ -39,12 +37,11 @@ class Tank(pygame.sprite.Sprite):
 
     def check_collision(self, movement_vector) -> bool:
         new_pos = self.pos + movement_vector
-        temp_rect = self.image.get_rect(center=new_pos)
         temp_sprite = pygame.sprite.Sprite()
 
-        temp_sprite.image = self.image
-        temp_sprite.rect = temp_rect
-        temp_sprite.mask = self.mask
+        temp_sprite.image = pygame.transform.rotate(self.original_image, self.angle)
+        temp_sprite.rect = temp_sprite.image.get_rect(center=new_pos)
+        temp_sprite.mask = pygame.mask.from_surface(temp_sprite.image)
 
         for sprite in all_sprites:
             if isinstance(sprite, Wall):
@@ -75,8 +72,8 @@ class Tank(pygame.sprite.Sprite):
 
             temp_sprite = pygame.sprite.Sprite()
             temp_sprite.image = self.image
-            temp_sprite.rect = self.image.get_rect(center=temp_pos)
-            temp_sprite.mask = self.mask
+            temp_sprite.rect = temp_sprite.image.get_rect(center=temp_pos)
+            temp_sprite.mask = pygame.mask.from_surface(temp_sprite.image)
 
             collision = False
             for sprite in all_sprites:
@@ -93,9 +90,7 @@ class Tank(pygame.sprite.Sprite):
         return TILE // 2, TILE // 2
 
     def move(self, forward, delta_time):
-        self.is_moving = True
         direction = 1 if not forward else -1
-        self.is_moving_forward = forward
 
         movement_distance = direction * self.movement_speed * delta_time
 
@@ -113,9 +108,6 @@ class Tank(pygame.sprite.Sprite):
 
     def rotate(self, direction, delta_time):
         rotation_step = self.rotation_speed * delta_time
-
-        if not self.is_moving_forward and self.is_moving:
-            rotation_step = rotation_step  # Можно поставить "-" и будет инверсия при движении назад
 
         if direction == 'left':
             new_angle = (self.angle + rotation_step) % 360
@@ -169,8 +161,6 @@ class Tank(pygame.sprite.Sprite):
 
     def update(self, delta_time, keys_pressed):
         if keys_pressed:
-            self.is_moving = False
-
             if keys_pressed[pygame.K_UP] and not keys_pressed[pygame.K_DOWN]:
                 self.move(forward=True, delta_time=delta_time)
             elif keys_pressed[pygame.K_DOWN] and not keys_pressed[pygame.K_UP]:
@@ -178,7 +168,7 @@ class Tank(pygame.sprite.Sprite):
 
             if keys_pressed[pygame.K_LEFT]:
                 self.rotate('left', delta_time=delta_time)
-            if keys_pressed[pygame.K_RIGHT]:
+            elif keys_pressed[pygame.K_RIGHT]:
                 self.rotate('right', delta_time=delta_time)
 
         if self.is_firing:
@@ -189,7 +179,7 @@ class Tank(pygame.sprite.Sprite):
                 if self.current_fire_frame < len(self.fire_frames):
                     self.image = pygame.transform.rotate(self.fire_frames[self.current_fire_frame], self.angle)
                     self.rect = self.image.get_rect(center=self.rect.center)
-                    self.mask = pygame.mask.from_surface(self.original_image)
+                    self.mask = pygame.mask.from_surface(self.fire_frames[self.current_fire_frame])
                 else:
                     self.is_firing = False
                     self.image = pygame.transform.rotate(self.original_image, self.angle)

@@ -7,7 +7,7 @@ class Bullets(pygame.sprite.Sprite):
         super().__init__(all_sprites, bullets_group)
         self.radius = 4
         self.color = pygame.Color(54, 53, 51)
-        self.speed = 300
+        self.speed = 320
         self.owner = owner
 
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
@@ -17,7 +17,9 @@ class Bullets(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(pos)
         self.velocity = pygame.math.Vector2(0, -1).rotate(-angle) * self.speed
 
-        self.spawn_time = pygame.time.get_ticks() + 5000
+        self.creation_time = pygame.time.get_ticks()  # Фиксируем время появления пули
+        self.spawn_time = self.creation_time + 5000  # Время удаления пули через 5 сек
+        self.invulnerable_time = self.creation_time + 150  # Неуязвимость в мс
 
     def update(self, delta_time, _):
         if pygame.time.get_ticks() >= self.spawn_time:

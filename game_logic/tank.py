@@ -31,7 +31,7 @@ class Tank(pygame.sprite.Sprite):
         # Скорость танка
         self.movement_speed = 160
         # Скорость поворота
-        self.rotation_speed = 220
+        self.rotation_speed = 210
 
         self.last_fire_time = 0.0  # Время последнего выстрела
 

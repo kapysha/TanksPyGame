@@ -19,7 +19,7 @@ class Bullets(pygame.sprite.Sprite):
 
         self.creation_time = pygame.time.get_ticks()  # Фиксируем время появления пули
         self.spawn_time = self.creation_time + 5000  # Время удаления пули через 5 сек
-        self.invulnerable_time = self.creation_time + 150  # Неуязвимость в мс
+        self.invulnerable_time = self.creation_time + 125  # Неуязвимость в мс
 
     def update(self, delta_time, _):
         if pygame.time.get_ticks() >= self.spawn_time:

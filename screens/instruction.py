@@ -23,7 +23,7 @@ def instruction():
 
     instructions_text = [
         "• Ездить: стрелочки на клавиатуре",
-        "• Стрелять: пробел",
+        "• Стрелять: пробел (раз в секунду)",
         "",
         "• Режимы игры:",
         "  • Простой:",
@@ -32,7 +32,8 @@ def instruction():
         "  • Сложный:",
         "    — Ваши пульки вас убивают.",
         "    — AI не получает урон от своих пуль.",
-        "    — AI движется и стреляет быстрее."
+        "    — AI движется, стреляет и поворачивает",
+        "         быстрее."
     ]
 
     back_button = Button(
@@ -57,7 +58,7 @@ def instruction():
             is_bold = line.startswith("  •") or line.startswith("• Режимы игры:")
             font = font_bold if is_bold else font_text
             text_surface = font.render(line, True, BLACK)
-            screen.blit(text_surface, (50, y_offset))
+            screen.blit(text_surface, (30, y_offset))
             y_offset += 40 if line else 20  # Увеличиваем отступ для пустых строк
 
         for event in pygame.event.get():

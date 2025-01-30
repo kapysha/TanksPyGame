@@ -14,6 +14,8 @@ from effects.particle import Explosion, Particle
 
 
 def play():
+    from config.settings import is_hard_mode
+
     ringtone.stop()
     image_player_tank = Explosion.load_image_with_color('assets/images/tank_player.png', (70, 255, 0, 0))
     image_ai_tank = Explosion.load_image_with_color('assets/images/tank_ai.png', (152, 51, 51, 0))
@@ -112,13 +114,9 @@ def play():
             for bullet in bullets_group:
                 current_time = pygame.time.get_ticks()
 
-                if bullet.owner == 'player' and pygame.sprite.spritecollideany(bullet, players_group):
+                if bullet.owner == 'player' and pygame.sprite.spritecollideany(bullet, players_group) and is_hard_mode:
                     if current_time < bullet.invulnerable_time:
                         continue  # Игнорируем попадание в своего танка
-
-                if bullet.owner == 'ai' and pygame.sprite.spritecollideany(bullet, ai_group):
-                    if current_time < bullet.invulnerable_time:
-                        continue  # Игнорируем попадание в своего же AI
 
                 killed = False
                 if bullet.owner == 'player':
@@ -131,7 +129,7 @@ def play():
                         PLAYER_WINS += 1
                         killed = True
 
-                    elif pygame.sprite.spritecollide(bullet, players_group, False):
+                    elif pygame.sprite.spritecollide(bullet, players_group, False) and is_hard_mode:
                         pos = tank.pos
                         tank.kill()
                         bullet.kill()
@@ -148,15 +146,6 @@ def play():
                         kill_sound.play()
                         Explosion(pos, (70, 255, 0, 0))
                         AI_WINS += 1
-                        killed = True
-
-                    elif pygame.sprite.spritecollide(bullet, ai_group, False):
-                        pos = ai_tank.pos
-                        ai_tank.kill()
-                        bullet.kill()
-                        kill_sound.play()
-                        Explosion(pos, (152, 51, 51, 0))
-                        PLAYER_WINS += 1
                         killed = True
 
                 if killed:

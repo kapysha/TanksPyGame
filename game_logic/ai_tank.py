@@ -54,6 +54,8 @@ class AITank(Tank):
     image, original_image, mask = load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))
 
     def __init__(self, graph, target):
+        from config.settings import is_hard_mode
+
         super().__init__(all_sprites, ai_group)
         self.fire_frames = [load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))[0],
                             load_image('assets/tanks_images/tank_2.png', (152, 51, 51, 0))[0],
@@ -72,13 +74,13 @@ class AITank(Tank):
 
         self.shooting_range = 350  # Пиксели
         self.shooting_angle_threshold = 60  # Градусы
-        self.shoot_cooldown = 0.5
+        self.shoot_cooldown = 0.5 if is_hard_mode else 0.8
         self.time_since_last_shot = 0.0  # Таймер
 
         # Скорость танка
-        self.movement_speed = 200
+        self.movement_speed = 210 if is_hard_mode else 180
         # Скорость поворота
-        self.rotation_speed = 230
+        self.rotation_speed = 230 if is_hard_mode else 210
 
     def find_grid_position(self, pos):
         x, y = int(pos.x // TILE), int(pos.y // TILE)

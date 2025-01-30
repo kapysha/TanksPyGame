@@ -17,11 +17,18 @@ bullet_sound = pygame.mixer.Sound('assets/sounds/bullet.ogg')
 kill_sound = pygame.mixer.Sound('assets/sounds/kill.ogg')
 ringtone = pygame.mixer.Sound('assets/sounds/ringtone.mp3')
 
+is_hard_mode: bool = False
+
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
 DARK_GRAY = (100, 100, 100)
 BLACK = (0, 0, 0)
 LIGHT_GRAY = (230, 230, 230)
+
+
+def switch_mode(mode: bool):
+    global is_hard_mode
+    is_hard_mode = mode
 
 
 def load_image(path: str, rgb: tuple):

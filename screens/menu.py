@@ -75,7 +75,7 @@ class VolumeControl:
 
 def menu():
     from launcher import switch_screen
-    from screens.play import play
+    from screens.play_mode import play_mode
     from screens.instruction import instruction
     from screens.statistics import statistics
 
@@ -96,7 +96,7 @@ def menu():
         return switch_screen(screen_new)
 
     start_button = Button(WIDTH_MENU / 2 - 125, 355, 250, 60, "Играть", LIGHT_GRAY, GRAY, text_color=BLACK,
-                          action=lambda: exit_menu(play))
+                          action=lambda: exit_menu(play_mode))
     instruction_button = Button(WIDTH_MENU / 2 - 190, 425, 180, 60, "Инструкция", LIGHT_GRAY, GRAY, text_color=BLACK,
                                 action=lambda: exit_menu(instruction))
     statistics_button = Button(WIDTH_MENU / 2 + 5, 425, 180, 60, "Статистика", LIGHT_GRAY, GRAY, text_color=BLACK,

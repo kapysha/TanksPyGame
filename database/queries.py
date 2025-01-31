@@ -5,8 +5,8 @@ import threading
 
 def add_shots(owner: str) -> None:
     def increment_shot():
-        if owner == 'ai':
-            field = Main.ai_total_shots
+        if owner == 'bot':
+            field = Main.bot_total_shots
         else:
             field = Main.player_total_shots
 
@@ -37,7 +37,7 @@ def update_battle_stats(winner: str, battle_duration: float):
                     Main.longest_battle_duration: max(current_longest, battle_duration),
                     Main.shortest_battle_duration: min(current_shortest, battle_duration),
                     Main.player_wins: Main.player_wins + (1 if winner == 'player' else 0),
-                    Main.ai_wins: Main.ai_wins + (1 if winner == 'ai' else 0)
+                    Main.bot_wins: Main.bot_wins + (1 if winner == 'bot' else 0)
                 })
             )
             sess.commit()

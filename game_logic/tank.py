@@ -4,7 +4,7 @@ import pygame
 from database.queries import add_shots
 from game_logic.bullets import Bullets
 from game_logic.generate_maze import Wall, grid_cells
-from config.settings import load_image, all_sprites, players_group, ai_group, TILE, bullet_sound
+from config.settings import load_image, all_sprites, players_group, bot_group, TILE, bullet_sound
 
 
 class Tank(pygame.sprite.Sprite):
@@ -48,7 +48,7 @@ class Tank(pygame.sprite.Sprite):
                 if pygame.sprite.collide_mask(temp_sprite, sprite):
                     return True
 
-        all_tanks = pygame.sprite.Group(players_group, ai_group)
+        all_tanks = pygame.sprite.Group(players_group, bot_group)
 
         for tank in all_tanks:
             if tank == self:
@@ -143,7 +143,7 @@ class Tank(pygame.sprite.Sprite):
 
     def fire_bullet(self, owner='player'):
         current_time = time.time()
-        if current_time - self.last_fire_time >= (0 if owner == 'ai' else 1.0):
+        if current_time - self.last_fire_time >= (0 if owner == 'bot' else 1.0):
             if not self.is_firing:
                 self.is_firing = True
                 self.current_fire_frame = 0

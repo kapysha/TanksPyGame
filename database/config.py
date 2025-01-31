@@ -12,9 +12,9 @@ class Main(Base):
     id = Column(Integer, primary_key=True)
     total_battles = Column(Integer, default=0)
     player_wins = Column(Integer, default=0)
-    ai_wins = Column(Integer, default=0)
+    bot_wins = Column(Integer, default=0)
     player_total_shots = Column(Integer, default=0)
-    ai_total_shots = Column(Integer, default=0)
+    bot_total_shots = Column(Integer, default=0)
     shortest_battle_duration = Column(Float, default=0.0)
     longest_battle_duration = Column(Float, default=0.0)
 

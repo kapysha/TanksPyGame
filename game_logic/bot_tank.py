@@ -1,6 +1,6 @@
 from collections import deque
 import pygame
-from config.settings import load_image, all_sprites, ai_group, TILE, walls_group_horizontal, walls_group_vertical
+from config.settings import load_image, all_sprites, bot_group, TILE, walls_group_horizontal, walls_group_vertical
 from game_logic.tank import Tank
 
 
@@ -50,17 +50,17 @@ def find_path(graph, start, end):
     return path
 
 
-class AITank(Tank):
+class BotTank(Tank):
     image, original_image, mask = load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))
 
     def __init__(self, graph, target):
         from config.settings import is_hard_mode
 
-        super().__init__(all_sprites, ai_group)
+        super().__init__(all_sprites, bot_group)
         self.fire_frames = [load_image('assets/tanks_images/tank_1.png', (152, 51, 51, 0))[0],
                             load_image('assets/tanks_images/tank_2.png', (152, 51, 51, 0))[0],
                             load_image('assets/tanks_images/tank_3.png', (152, 51, 51, 0))[0]]
-        self.original_image = AITank.original_image
+        self.original_image = BotTank.original_image
         self.image = self.original_image
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=self.pos)
@@ -174,11 +174,11 @@ class AITank(Tank):
 
         # Проверка условий для стрельбы
         # Игрок в радиусе
-        # Ствол направлен на игрока и нет стен между AI и игроком
+        # Ствол направлен на игрока и нет стен между ботом и игроком
         if (self.is_player_in_range() and
             (self.is_barrel_aimed_at_player() and self.has_line_of_sight())) and \
                 self.time_since_last_shot >= self.shoot_cooldown:
-            self.fire_bullet(owner='ai')
+            self.fire_bullet(owner='bot')
             self.time_since_last_shot = 0.0
 
         super().update(delta_time, None)

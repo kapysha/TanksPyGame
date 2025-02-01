@@ -19,7 +19,7 @@ class Tank(pygame.sprite.Sprite):
         self.image = self.original_image
         self.angle = 0
         self.rect = self.image.get_rect()
-        self.pos = pygame.math.Vector2(self.random_position())
+        self.pos = pygame.math.Vector2((-100, -100))
         self.rect.center = self.pos
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -58,34 +58,27 @@ class Tank(pygame.sprite.Sprite):
 
         return False  # Нет столкновения
 
-    def random_position(self):
+    def random_position(self, other_tank=None):
         available_cells = [
             cell for cell in grid_cells
-            if not all(cell.walls.values())  # Клетка с хотя бы одним проходом
+            if not all(cell.walls.values())
         ]
-        for _ in range(100):
+
+        for _ in range(1000):
             random_cell = random.choice(available_cells)
             pos_x = random_cell.x * TILE + TILE // 2
             pos_y = random_cell.y * TILE + TILE // 2
 
-            temp_pos = pygame.math.Vector2(pos_x, pos_y)
+            new_pos = pygame.math.Vector2(pos_x, pos_y)
 
-            temp_sprite = pygame.sprite.Sprite()
-            temp_sprite.image = self.image
-            temp_sprite.rect = temp_sprite.image.get_rect(center=temp_pos)
-            temp_sprite.mask = pygame.mask.from_surface(temp_sprite.image)
+            if other_tank:
+                if other_tank.rect.collidepoint(new_pos.x, new_pos.y):
+                    print(1)
+                    continue
 
-            collision = False
-            for sprite in all_sprites:
-                if isinstance(sprite, Wall):
-                    if pygame.sprite.collide_mask(temp_sprite, sprite):
-                        collision = True
-
-                if isinstance(sprite, Tank) and pygame.sprite.collide_mask(temp_sprite, sprite):
-                    collision = True
-
-            if not collision:
-                return pos_x, pos_y
+            self.pos = new_pos
+            self.rect.center = new_pos
+            return pos_x, pos_y
 
         return TILE // 2, TILE // 2
 
@@ -185,3 +178,11 @@ class Tank(pygame.sprite.Sprite):
                     self.image = pygame.transform.rotate(self.original_image, self.angle)
                     self.rect = self.image.get_rect(center=self.rect.center)
                     self.mask = pygame.mask.from_surface(self.original_image)
+
+
+def are_positions_colliding(new_pos, all_tanks):
+    for tank in all_tanks:
+        if tank.rect.collidepoint(new_pos.x, new_pos.y):  # Проверяем, не занято ли место
+            return True
+    print(1)
+    return False

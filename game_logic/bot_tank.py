@@ -113,7 +113,7 @@ class BotTank(Tank):
                 self.path_index += 1
                 angle = 1
             else:
-                angle = 5
+                angle = 2
 
             desired_angle = direction_vector.angle_to(
                 pygame.math.Vector2(0, -1))  # под каким углом направлен direction_vector относительно "вверх"

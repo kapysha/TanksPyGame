@@ -6,7 +6,7 @@ from game_logic.generate_maze import grid_cells, Wall
 from game_logic.bot_tank import build_graph, BotTank
 from launcher import switch_screen
 from screens.menu import Button, menu
-from game_logic.tank import Tank
+from game_logic.tank import Tank, are_positions_colliding
 from game_logic.generate_maze import generate_maze
 from config.settings import all_sprites, players_group, cols, rows, bullets_group, bot_group, kill_sound, WIDTH, HEIGHT, \
     WHITE, clock, ringtone
@@ -35,8 +35,11 @@ def play():
 
     generate_maze()  # Генерация лабиринта
     graph = build_graph(grid_cells, cols, rows)
+
     tank = Tank(all_sprites, players_group)
     bot_tank = BotTank(graph, tank)
+    tank.random_position()
+    bot_tank.random_position(tank)
 
     frozen = False
     freeze_start_time = None
@@ -82,6 +85,8 @@ def play():
 
         tank = Tank(all_sprites, players_group)
         bot_tank = BotTank(graph, tank)
+        tank.random_position()
+        bot_tank.random_position(tank)
 
         BATTLE_START_TIME = time.time()
 

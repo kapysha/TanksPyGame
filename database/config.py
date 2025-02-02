@@ -1,8 +1,16 @@
+import os
+from pathlib import Path
 from sqlalchemy import create_engine, Column, Integer, DDL, event, Float
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import scoped_session, sessionmaker, Session, declarative_base
 
-engine = create_engine("sqlite:///main.db")
+appdata_roaming = Path(os.getenv('APPDATA'))
+tanks_directory = appdata_roaming / "Tanks"
+if not tanks_directory.exists():
+    tanks_directory.mkdir(parents=True, exist_ok=True)
+db_path = tanks_directory / "main.db"
+
+engine = create_engine(f"sqlite:///{db_path}")
 session = scoped_session(sessionmaker(bind=engine, class_=Session))
 Base = declarative_base()
 

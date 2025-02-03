@@ -9,7 +9,7 @@
 
 ### Клонирование репозитория:
 ```
-git clone https://github.com/kapysha/tanks_pygame.git
+https://github.com/kapysha/TanksPyGame.git
 cd TanksPyGame
 ```
 ### Установка библиотек:
